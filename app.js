@@ -1,0 +1,117 @@
+$(document).ready(function() {
+
+  var Arrays = {
+    water: [],
+    fire: [],
+    plant: []
+  }
+
+  $('#wrap li').click(addItemToCart);
+
+  function addItemToCart(){
+
+    var thisID = $(this).attr('id');
+
+    var itemcollection = $(this).closest('div.list').attr('role')
+    var itemname  = $(this).find('div .name').html();
+    var itemprice = $(this).find('div .price').html();
+
+    var targetCart = $('div.cart[role='+itemcollection+']')
+
+    if(include(Arrays[itemcollection],thisID))
+    {
+      var price    = $('#each-'+thisID).children(".shopp-price").find('em').html();
+      var quantity = $('#each-'+thisID).children(".shopp-quantity").html();
+      quantity = parseInt(quantity)+parseInt(1);
+
+      var total = parseInt(itemprice)*parseInt(quantity);
+
+      $('#each-'+thisID).children(".shopp-price").find('em').html(total);
+      $('#each-'+thisID).children(".shopp-quantity").html(quantity);
+
+      var prev_charges = $('div.cart[role='+itemcollection+'] .cart-total span').html();
+      prev_charges = parseInt(prev_charges)-parseInt(price);
+
+      prev_charges = parseInt(prev_charges)+parseInt(total);
+      $('div.cart[role='+itemcollection+'] .cart-total span').html(prev_charges);
+
+      // [TODO]
+      $('#total-hidden-charges-'+itemcollection).val(prev_charges);
+    }
+    else
+    {
+      Arrays[itemcollection].push(thisID);
+
+      var prev_charges = $('div.cart[role='+itemcollection+'] .cart-total span').html();
+      prev_charges = parseInt(prev_charges)+parseInt(itemprice);
+
+      $('div.cart[role='+itemcollection+'] .cart-total span').html(prev_charges);
+      $('#total-hidden-charges-'+itemcollection).val(prev_charges);
+
+      $('#left_bar div.cart[role='+itemcollection+'] .cart-info').append('<div class="shopp" id="each-'+thisID+'"><div class="label">'+itemname+'</div><div class="shopp-price"> <em>'+itemprice+'</em></div><span class="shopp-quantity">1</span><img src="remove.png" class="remove" /><br class="all" /></div>');
+
+      $('#cart').css({'-webkit-transform' : 'rotate(20deg)','-moz-transform' : 'rotate(20deg)' });
+    }
+
+    setTimeout(function(){ angle() }, 200);
+  }
+
+
+  $('.remove').livequery('click', function() {
+    var itemcollection = $(this).closest('div.cart').attr('role')
+
+    var deduct = $(this).parent().children(".shopp-price").find('em').html();
+    var prev_charges = $('div.cart[role='+itemcollection+'] .cart-total span').html();
+
+    var thisID = $(this).parent().attr('id').replace('each-','');
+
+    var array = Arrays[itemcollection]
+
+    var pos = getpos(array,thisID);
+    array.splice(pos,1,"0")
+
+    prev_charges = parseInt(prev_charges)-parseInt(deduct);
+    $('div.cart[role='+itemcollection+'] .cart-total span').html(prev_charges);
+    $('#total-hidden-charges-'+itemcollection).val(prev_charges);
+    $(this).parent().remove();
+
+  });
+
+  $('#Submit').livequery('click', function() {
+
+    var totalCharge = $('#total-hidden-charges').val();
+
+    $('#left_bar').html('Total Charges: $'+totalCharge);
+
+    return false;
+
+  });
+
+  $('#wrap li').mousemove(function(){
+
+    var position = $(this).position();
+
+    $('#cart').stop().animate({
+
+        left   : position.left+'px',
+
+      },250,function(){
+
+    });
+  }).mouseout(function(){
+
+  });
+
+});
+
+function include(arr, obj) {
+  for(var i=0; i<arr.length; i++) {
+    if (arr[i] == obj) return true;
+  }
+}
+function getpos(arr, obj) {
+  for(var i=0; i<arr.length; i++) {
+    if (arr[i] == obj) return i;
+  }
+}
+function angle(){$('#cart').css({'-webkit-transform' : 'rotate(0deg)','-moz-transform' : 'rotate(0deg)' });}
